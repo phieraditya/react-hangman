@@ -23,6 +23,11 @@ class Hangman extends Component {
     this.reset = this.reset.bind(this);
   }
 
+  /** isGameOver: return true when player run out game lives */
+  isGameOver() {
+    return this.state.nWrong >= this.props.maxWrong;
+  }
+
   /** reset: restart the game:
     - pick a new random word
     - reset the guessed list
@@ -71,14 +76,24 @@ class Hangman extends Component {
     ));
   }
 
-  /** render: render game */
-  render() {
-    const gameOver = this.state.nWrong >= this.props.maxWrong;
+  /** generateGameState: return game state:
+    - display buttons if it is still playing
+    - hidden buttons:
+      - if player lose (run out allowed wrongs)
+      - if player win (guessed the word) 
+   */
+  generateGameState() {
     const isWinner = this.guessedWord().join('') === this.state.answer;
-    const altText = `${this.state.nWrong}/${this.props.maxWrong} guesses`;
     let gameState = this.generateButtons();
     if (isWinner) gameState = 'You Win!';
-    if (gameOver) gameState = 'You Lose!';
+    if (this.isGameOver()) gameState = 'You Lose!';
+
+    return gameState;
+  }
+
+  /** render: render game */
+  render() {
+    const altText = `${this.state.nWrong}/${this.props.maxWrong} guesses`;
 
     return (
       <div className="Hangman">
@@ -86,9 +101,9 @@ class Hangman extends Component {
         <img src={this.props.images[this.state.nWrong]} alt={altText} />
         <p>Guessed Wrong: {this.state.nWrong}</p>
         <p className="Hangman-word">
-          {!gameOver ? this.guessedWord() : this.state.answer}
+          {!this.isGameOver() ? this.guessedWord() : this.state.answer}
         </p>
-        <p className="Hangman-btns">{gameState}</p>
+        <p className="Hangman-btns">{this.generateGameState()}</p>
         <button id="reset" onClick={this.reset}>
           Restart?
         </button>
